@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tempero da Erica – Delivery</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Arial, Helvetica, sans-serif;
+      background: #f7f7f7;
+      color: #333;
+    }
+
+    header {
+      background: #e67e22;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 220px;
+      width: 100%;
+    }
+
+    .banner img {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      display: block;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      color: #e67e22;
+      margin-top: 0;
+    }
+
+    
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .item:last-child { border-bottom: none; }
+
+    .price { font-weight: bold; }
+
+    .add-btn {
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .food-img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .cart {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      padding: 15px;
+    }
+
+    .cart-toggle {
+      display: none;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 10px;
+      background: #e67e22;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 6px;
+      margin: 6px 0;
+      border-radius: 6px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #eee;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      .cart {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        border-radius: 16px 16px 0 0;
+        max-height: 70vh;
+        overflow-y: auto;
+        display: none;
+      }
+      .cart-toggle {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #e67e22;
+        color: #fff;
+        padding: 14px 16px;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 1000;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" class="logo" alt="Tempero da Erica" />
+  <p>Comida feita com carinho ❤️</p>
+</header>
+
+<section class="banner">
+  <img src="banner.png" alt="Banner" />
+</section>
+
+<main>
+
+  
+
+  <div class="card">
+    <h2>Galinha Caipira</h2>
+    <img src="galinha-caipira.jpg" class="food-img" />
+    <div class="item">
+      <span>Meia Galinha</span>
+      <span class="price">R$ 60</span>
+      <button class="add-btn" onclick="addToCart('Meia Galinha',60)">Adicionar</button>
+    </div>
+    <div class="item">
+      <span>Galinha Inteira</span>
+      <span class="price">R$ 120</span>
+      <button class="add-btn" onclick="addToCart('Galinha Inteira',120)">Adicionar</button>
+    </div>
+  </div>
+
+  
+  </div>
+
+  <aside class="cart" id="cart">
+    <h3>🛒 Seu pedido</h3>
+    <div id="cart-items"></div>
+
+    <input id="nome" placeholder="Nome" />
+    <input id="telefone" placeholder="Telefone (ID)" />
+    <input id="rua" placeholder="Rua" />
+    <input id="bairro" placeholder="Bairro" />
+    <input id="numero" placeholder="Número" />
+    <textarea id="obs" placeholder="Observações"></textarea>
+
+    <p><strong>Total: R$ <span id="total">0</span></strong></p>
+    <button class="btn" onclick="salvarPedido()">Salvar pedido</button>
+    <button class="btn" style="background:#27ae60" onclick="pedidoTeste()">🧪 Fazer pedido de teste</button>
+  </aside>
+
+  <div class="cart-toggle" onclick="toggleCart()">🛒</div>
+
+</main>
+
+<script>
+  let cart = {};
+
+  function addToCart(name, price) {
+    if (!cart[name]) cart[name] = { price, qty: 1 };
+    else cart[name].qty++;
+    renderCart();
+  }
+
+  function changeQty(name, delta) {
+    cart[name].qty += delta;
+    if (cart[name].qty <= 0) delete cart[name];
+    renderCart();
+  }
+
+  function renderCart() {
+    const items = document.getElementById('cart-items');
+    const totalSpan = document.getElementById('total');
+    items.innerHTML = '';
+    let total = 0;
+
+    Object.keys(cart).forEach(name => {
+      const item = cart[name];
+      total += item.price * item.qty;
+      items.innerHTML += `
+        <div class="cart-item">
+          <span>${name} x${item.qty}</span>
+          <span>
+            <button onclick="changeQty('${name}',-1)">➖</button>
+            <button onclick="changeQty('${name}',1)">➕</button>
+            <button onclick="changeQty('${name}',-${item.qty})">❌</button>
+          </span>
+        </div>`;
+    });
+
+    totalSpan.textContent = total;
+  }
+
+  function toggleCart() {
+    const c = document.getElementById('cart');
+    c.style.display = c.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function salvarPedido() {
+    const telefoneCliente = document.getElementById('telefone').value;
+    if (!telefoneCliente) {
+      alert('Telefone é obrigatório');
+      return;
+    }
+
+    if (Object.keys(cart).length === 0) {
+      alert('Carrinho vazio');
+      return;
+    }
+
+    let mensagem = '*🧾 NOVO PEDIDO – TEMPERO DA ERICA*%0A%0A';
+    mensagem += '*Cliente:* ' + document.getElementById('nome').value + '%0A';
+    mensagem += '*Telefone:* ' + telefoneCliente + '%0A';
+    mensagem += '*Endereço:* ' + document.getElementById('rua').value + ', ' + document.getElementById('numero').value + ' – ' + document.getElementById('bairro').value + '%0A%0A';
+    mensagem += '*Itens:*%0A';
+
+    let total = 0;
+    Object.keys(cart).forEach(name => {
+      const item = cart[name];
+      total += item.price * item.qty;
+      mensagem += '- ' + name + ' x' + item.qty + ' (R$ ' + (item.price * item.qty) + ')%0A';
+    });
+
+    mensagem += '%0A*Total:* R$ ' + total + '%0A';
+
+    const obs = document.getElementById('obs').value;
+    if (obs) mensagem += '*Observações:* ' + obs + '%0A';
+
+    const pedido = {
+      nome: document.getElementById('nome').value,
+      telefone: telefoneCliente,
+      rua: document.getElementById('rua').value,
+      bairro: document.getElementById('bairro').value,
+      numero: document.getElementById('numero').value,
+      observacoes: obs,
+      itens: cart,
+      total: total,
+      data: new Date().toLocaleString()
+    };
+
+    const key = 'pedidos_' + telefoneCliente;
+    const historico = JSON.parse(localStorage.getItem(key)) || [];
+    historico.push(pedido);
+    localStorage.setItem(key, JSON.stringify(historico));
+
+    window.open('https://wa.me/5598985991853?text=' + mensagem, '_blank');
+
+    cart = {};
+    renderCart();
+  }
+
+  function pedidoTeste() {
+    cart = {};
+    addToCart('Meia Galinha', 60);
+    addToCart('Galinha Inteira', 120);
+
+    document.getElementById('nome').value = 'Cliente Teste';
+    document.getElementById('telefone').value = '11999999999';
+    document.getElementById('rua').value = 'Rua de Teste';
+    document.getElementById('bairro').value = 'Centro';
+    document.getElementById('numero').value = '123';
+    document.getElementById('obs').value = 'Pedido de teste - sem pimenta';
+
+    renderCart();
+    alert('Pedido de teste criado. Agora clique em SALVAR PEDIDO.');
+  }
+</script>
+
+<footer>
+  © 2026 - Tempero da Erica
+</footer>
+
+</body>
+</html>
